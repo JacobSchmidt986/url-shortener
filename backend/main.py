@@ -64,6 +64,32 @@ def shorten_url(
     )
 
 
+@app.get("/api/stats/{short_code}")
+def get_url_stats(
+    short_code: str,
+    db: Session = Depends(get_db)
+):
+    # Find the URL by its short code
+    url_entry = db.query(URL).filter(
+        URL.short_code == short_code
+    ).first()
+
+    # Return 404 if the code doesn't exist
+    if url_entry is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Short URL not found"
+        )
+
+    # Return the URL's statistics
+    return {
+        "short_code": url_entry.short_code,
+        "original_url": url_entry.original_url,
+        "clicks": url_entry.clicks,
+        "created_at": url_entry.created_at
+    }
+
+
 @app.get("/{short_code}")
 def redirect_to_url(
     short_code: str,
